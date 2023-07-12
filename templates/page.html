@@ -1,0 +1,94 @@
+<html>
+  <body>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+    <form>
+      <input type="file" name="file" id="pdf">
+      <input type="submit">
+    </form>
+    <button class="download">Download</button>
+    <div class="images_div"></div>
+    <script>
+      function render_images(images) {
+        let htmls = ""
+        for (const key in images) {
+          htmls += `<img onclick="remove(this)" page_attr="${key}" src="data:image/png;base64,${images[key]}" width="250" height="300">`
+        }
+        return htmls
+      }
+
+      function remove(el) {
+        var element = el;
+        element.remove();
+      }
+
+      function get_remaining_images() {
+        let images = new Array()
+        $('.images_div > img').each(function () {
+          images.push($(this).attr('src').replace(/^[^,]*,/, ''))
+        });
+        return images
+      }
+
+      function downloadPDF(pdf) {
+        const linkSource = `data:application/pdf;base64,${pdf}`;
+        const downloadLink = document.createElement("a");
+        const fileName = "result.pdf";
+        downloadLink.href = linkSource;
+        downloadLink.download = fileName;
+        downloadLink.click();
+      }
+
+      $('.download').on('click', function(){
+          $.ajax({
+            url: `/download-pdf`,
+            type: "POST",
+            contentType: "application/json",
+            dataType: "JSON",
+            data: JSON.stringify({"images":get_remaining_images()}),
+            success: function (response) {
+              downloadPDF(response['pdf'])
+            }, error: function(_, textStatus, errorThrown) { 
+              console.log("Status: " + textStatus);
+              console.log("Error: " + errorThrown); 
+            }
+        });
+      })
+
+      $('form').on('submit', function (e) {
+        e.preventDefault();
+
+        var reader = new FileReader(),
+            file = $('#pdf')[0];
+
+        if (!file.files.length) {
+            alert('no file uploaded');
+            return false;
+        }
+
+        reader.onload = function () {
+            var data = reader.result,
+                base64 = data.replace(/^[^,]*,/, ''),
+                info = {
+                  pdf: base64 //either leave this `base64` or make it `data` if you want to leave the `data:application/pdf;base64,` at the start
+                };
+            $.ajax({
+                url: `/upload-pdf`,
+                type: "POST",
+                // contentType: "application/json",
+                dataType: "JSON",
+                data: info,
+                success: function (response) {
+                  $('.images_div').append(
+                    render_images(response.images)
+                  );
+                }, error: function(_, textStatus, errorThrown) { 
+                  console.log("Status: " + textStatus);
+                  console.log("Error: " + errorThrown); 
+                }
+            });
+        };
+        reader.readAsDataURL(file.files[0]);
+      });
+    </script>
+  </body>
+</html>
