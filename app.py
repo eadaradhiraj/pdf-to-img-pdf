@@ -7,11 +7,11 @@ import json
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1000 * 1000
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 
 @app.route("/download-pdf", methods=["POST"])
-@cross_origin()
+# @cross_origin()
 def download_pdf():
     posted_data = json.loads(request.data)
     if not posted_data.get("images", []):
@@ -24,7 +24,7 @@ def download_pdf():
 
 
 @app.route("/upload-pdf", methods=["POST"])
-@cross_origin()
+# @cross_origin()
 def upload_pdf():
     # check if the post request has the file partx
     if "pdf" not in request.form:
