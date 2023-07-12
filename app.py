@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import base64
 from pdf_to_img_pdf import PDF2IMGPDF
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 import json
 
 
@@ -11,6 +11,7 @@ CORS(app)
 
 
 @app.route("/download-pdf", methods=["POST"])
+@cross_origin()
 def download_pdf():
     posted_data = json.loads(request.data)
     if not posted_data.get("images", []):
@@ -23,6 +24,7 @@ def download_pdf():
 
 
 @app.route("/upload-pdf", methods=["POST"])
+@cross_origin()
 def upload_pdf():
     # check if the post request has the file partx
     if "pdf" not in request.form:
