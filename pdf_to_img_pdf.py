@@ -12,7 +12,7 @@ def decode_base64(bytevar):
 
 class PDF2IMGPDF:
     @staticmethod
-    def convert_to_images(file_bytes, dpi=25) -> None:
+    def convert_to_images(file_bytes, dpi=50) -> None:
         _images = pdf2image.convert_from_bytes(file_bytes, dpi=dpi)
         result = {}
         for k, v in enumerate(_images):
